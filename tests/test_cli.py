@@ -36,6 +36,12 @@ class TestCLI:
         assert "Agent Reach" in captured.out
         assert "✅" in captured.out
 
+    def test_search_xhs_command_outputs_json(self, capsys):
+        with patch("agent_reach.xiaohongshu_search.search_xiaohongshu", return_value=[{"id": "n1", "sources": ["search"]}]):
+            cli._cmd_search_xhs(Namespace(query="我猫讲AI", number=1, no_username_lookup=False))
+        captured = capsys.readouterr().out
+        assert '[\n  {\n    "id": "n1",\n    "sources": [\n      "search"\n    ]\n  }\n]' in captured
+
     def test_doctor_preserves_existing_skill_install(self, monkeypatch, tmp_path, capsys):
         skill_dir = tmp_path / ".agents" / "skills" / "agent-reach"
         skill_dir.mkdir(parents=True)

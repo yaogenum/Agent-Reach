@@ -113,6 +113,19 @@ def main():
     p_format = sub.add_parser("format", help="Clean and format platform API output")
     p_format.add_argument("platform", choices=["xhs"], help="Platform to format (xhs)")
 
+    # ── search-xhs ──
+    p_search_xhs = sub.add_parser(
+        "search-xhs",
+        help="Search XiaoHongShu with multi-path recall (search + user)",
+    )
+    p_search_xhs.add_argument("query", help="Keyword or username to search")
+    p_search_xhs.add_argument("-n", "--number", type=int, default=10, help="Max items")
+    p_search_xhs.add_argument(
+        "--no-username-lookup",
+        action="store_true",
+        help="Skip user-path recall",
+    )
+
     # ── check-update ──
     # ── transcribe ──
     p_tr = sub.add_parser("transcribe", help="Transcribe a URL or local audio file (Whisper via Groq/OpenAI)")
@@ -161,6 +174,8 @@ def main():
         _cmd_skill(args)
     elif args.command == "format":
         _cmd_format(args)
+    elif args.command == "search-xhs":
+        _cmd_search_xhs(args)
     elif args.command == "transcribe":
         _cmd_transcribe(args)
 
@@ -527,6 +542,17 @@ def _cmd_format(args):
 
         cleaned = format_xhs_result(data)
         print(json.dumps(cleaned, ensure_ascii=False, indent=2))
+
+
+def _cmd_search_xhs(args):
+    from agent_reach.xiaohongshu_search import search_xiaohongshu
+
+    results = search_xiaohongshu(
+        args.query,
+        limit=max(0, args.number),
+        include_username_lookup=not args.no_username_lookup,
+    )
+    print(json.dumps(results, ensure_ascii=False, indent=2))
 
 
 def _install_system_deps():
